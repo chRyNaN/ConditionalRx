@@ -53,7 +53,7 @@ public class ConditionalTest {
 
         assertCodeExecutedSuccessfully();
 
-        Assert.assertTrue("Count does not equal 1 for a single value condition.", count == 1);
+        assertTrue("singleConditionShouldWork()", 1);
     }
 
     @Test
@@ -85,7 +85,7 @@ public class ConditionalTest {
 
         assertCodeExecutedSuccessfully();
 
-        Assert.assertTrue("Count does not equal 0 for an else-if condition.", count == 0);
+        assertTrue("elseIfConditionShouldWork()", 0);
     }
 
     @Test
@@ -112,7 +112,7 @@ public class ConditionalTest {
 
         assertCodeExecutedSuccessfully();
 
-        Assert.assertTrue("Count does not equal -4 for an else condition.", count == -4);
+        assertTrue("elseConditionShouldWork()", -4);
     }
 
     @Test
@@ -149,7 +149,7 @@ public class ConditionalTest {
 
         assertCodeExecutedSuccessfully();
 
-        Assert.assertTrue("Count does not equal 8 for multiple conditions.", count == 8);
+        assertTrue("multipleConditionsShouldWork()", 8);
     }
 
     @Test
@@ -175,21 +175,211 @@ public class ConditionalTest {
 
         assertCodeExecutedSuccessfully();
 
-        Assert.assertTrue("Count does not equal 6 for where else condition shouldn't be reached.", count == 6);
+        assertTrue("elseConditionShouldNotBeReached()", 6);
     }
 
     @Test
     public void singleConditionAndShouldWork() {
         resetVariables();
 
+        // Verify a true and statement works
+        observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer.equals(3);
+            }
+        }).andThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer < 4;
+            }
+        }).then(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                count++;
+            }
+        })).subscribe(testSubscriber);
+
+        assertCodeExecutedSuccessfully();
+
+        assertTrue("singleConditionAndShouldWork()", 1);
+
+        resetVariables();
+
+        // Verify a false and statement does not work
+        observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer.equals(3);
+            }
+        }).andThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer > 4;
+            }
+        }).then(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                count++;
+            }
+        })).subscribe(testSubscriber);
+
+        assertCodeExecutedSuccessfully();
+
+        assertTrue("singleConditionAndShouldWork()", 0);
     }
 
-    private void assertCodeExecutedSuccessfully() {
-        // Make assertions
-        testSubscriber.assertNoErrors();
-        testSubscriber.assertCompleted();
-        testSubscriber.assertValueCount(testValues.size());
-        testSubscriber.assertReceivedOnNext(testValues);
+    @Test
+    public void singleConditionNotAndShouldWork() {
+        resetVariables();
+
+        // Verify a true not and statement works
+        observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer.equals(25);
+            }
+        }).andNotThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer.equals(12);
+            }
+        }).then(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                count++;
+            }
+        })).subscribe(testSubscriber);
+
+        assertCodeExecutedSuccessfully();
+
+        assertTrue("singleConditionNotAndShouldWork()", 1);
+
+        resetVariables();
+
+        // Verify a false not and statement works
+        observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer.equals(3);
+            }
+        }).andNotThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer.equals(3);
+            }
+        }).then(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                count++;
+            }
+        })).subscribe(testSubscriber);
+
+        assertCodeExecutedSuccessfully();
+
+        assertTrue("singleConditionNotAndShouldWork()", 0);
+    }
+
+    @Test
+    public void singleConditionOrShouldWork() {
+        resetVariables();
+
+        // Verify a true or statement works
+        observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer.equals(3);
+            }
+        }).orThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer < 5;
+            }
+        }).then(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                count++;
+            }
+        })).subscribe(testSubscriber);
+
+        assertCodeExecutedSuccessfully();
+
+        assertTrue("singleConditionOrShouldWork()", 2);
+
+        resetVariables();
+
+        // Verify a true statement but a false or statement works
+        observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer.equals(3);
+            }
+        }).orThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer < 3;
+            }
+        }).then(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                count++;
+            }
+        })).subscribe(testSubscriber);
+
+        assertCodeExecutedSuccessfully();
+
+        assertTrue("singleConditionOrShouldWork()", 1);
+    }
+
+    @Test
+    public void singleConditionNotOrShouldWork() {
+        resetVariables();
+
+        // Verify a true not or statement works
+        observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer.equals(3);
+            }
+        }).orNotThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer > 3;
+            }
+        }).then(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                count++;
+            }
+        })).subscribe(testSubscriber);
+
+        assertCodeExecutedSuccessfully();
+
+        assertTrue("singleConditionNotOrShouldWork()", 1);
+
+        resetVariables();
+
+        // Verify a true statement but a false or statement works
+        observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer.equals(12);
+            }
+        }).orNotThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer < 100;
+            }
+        }).then(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                count++;
+            }
+        })).subscribe(testSubscriber);
+
+        assertCodeExecutedSuccessfully();
+
+        assertTrue("singleConditionNotOrShouldWork()", 1);
     }
 
     private void resetVariables() {
@@ -201,5 +391,19 @@ public class ConditionalTest {
 
         // Observerable used to test
         observable = Observable.from(testValues);
+    }
+
+    private void assertCodeExecutedSuccessfully() {
+        // Make assertions
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertCompleted();
+        testSubscriber.assertValueCount(testValues.size());
+        testSubscriber.assertReceivedOnNext(testValues);
+    }
+
+    private void assertTrue(String methodName, int valueCountShouldBe) {
+        Assert.assertTrue("Count field value in " + methodName + " method in ConditionalTest class is not correct " +
+                        "after performing test. Count value should be = " + valueCountShouldBe + " but it is = " + count,
+                count == valueCountShouldBe);
     }
 }
