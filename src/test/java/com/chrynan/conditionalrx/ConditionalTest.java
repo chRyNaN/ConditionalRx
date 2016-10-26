@@ -16,7 +16,8 @@ import java.util.List;
  */
 public class ConditionalTest {
 
-    private TestSubscriber testSubscriber;
+    private Observable<Integer> observable;
+    private TestSubscriber<Integer> testSubscriber;
     private List<Integer> testValues;
     private int count;
 
@@ -34,16 +35,8 @@ public class ConditionalTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void singleConditionShouldWork() {
-        // Reset count variable
-        count = 0;
-
-        // Helps test Observables and their results
-        testSubscriber = new TestSubscriber();
-
-        // Observerable used to test
-        Observable observable = Observable.from(testValues);
+        resetVariables();
 
         // Single condition
         observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
@@ -64,16 +57,8 @@ public class ConditionalTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void elseIfConditionShouldWork() {
-        // Reset count variable
-        count = 0;
-
-        // Helps test Observables and their results
-        testSubscriber = new TestSubscriber();
-
-        // Observerable used to test
-        Observable observable = Observable.from(testValues);
+        resetVariables();
 
         // If-else-if condition
         observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
@@ -104,16 +89,8 @@ public class ConditionalTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void elseConditionShouldWork() {
-        // Reset count variable
-        count = 0;
-
-        // Helps test Observables and their results
-        testSubscriber = new TestSubscriber();
-
-        // Observerable used to test
-        Observable observable = Observable.from(testValues);
+        resetVariables();
 
         // If-else condition
         observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
@@ -139,16 +116,8 @@ public class ConditionalTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void multipleConditionsShouldWork() {
-        // Reset count variable
-        count = 0;
-
-        // Helps test Observables and their results
-        testSubscriber = new TestSubscriber();
-
-        // Observerable used to test
-        Observable observable = Observable.from(testValues);
+        resetVariables();
 
         // Multiple conditions
         observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
@@ -184,16 +153,8 @@ public class ConditionalTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void elseConditionShouldNotBeReached() {
-        // Reset count variable
-        count = 0;
-
-        // Helps test Observables and their results
-        testSubscriber = new TestSubscriber();
-
-        // Observerable used to test
-        Observable observable = Observable.from(testValues);
+        resetVariables();
 
         observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
             @Override
@@ -217,12 +178,28 @@ public class ConditionalTest {
         Assert.assertTrue("Count does not equal 6 for where else condition shouldn't be reached.", count == 6);
     }
 
-    @SuppressWarnings("unchecked")
+    @Test
+    public void singleConditionAndShouldWork() {
+        resetVariables();
+
+    }
+
     private void assertCodeExecutedSuccessfully() {
         // Make assertions
         testSubscriber.assertNoErrors();
         testSubscriber.assertCompleted();
         testSubscriber.assertValueCount(testValues.size());
         testSubscriber.assertReceivedOnNext(testValues);
+    }
+
+    private void resetVariables() {
+        // Reset count variable
+        count = 0;
+
+        // Helps test Observables and their results
+        testSubscriber = new TestSubscriber<>();
+
+        // Observerable used to test
+        observable = Observable.from(testValues);
     }
 }
