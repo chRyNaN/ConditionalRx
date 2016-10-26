@@ -81,11 +81,11 @@ public class IfOperator<T> implements Observable.Operator<T, T> {
             return new ConjunctionConditionBuilder<>(previousConditions, condition, ConjunctionConditionBuilder.Conjunction.OR, conjunctionCondition);
         }
 
-        public ConjunctionConditionBuilder andNotThis(Func1<T, Boolean> conjunctionCondition) {
+        public ConjunctionConditionBuilder<T> andNotThis(Func1<T, Boolean> conjunctionCondition) {
             return new ConjunctionConditionBuilder<>(previousConditions, condition, ConjunctionConditionBuilder.Conjunction.NOT_AND, conjunctionCondition);
         }
 
-        public ConjunctionConditionBuilder orNotThis(Func1<T, Boolean> conjunctionCondition) {
+        public ConjunctionConditionBuilder<T> orNotThis(Func1<T, Boolean> conjunctionCondition) {
             return new ConjunctionConditionBuilder<>(previousConditions, condition, ConjunctionConditionBuilder.Conjunction.NOT_OR, conjunctionCondition);
         }
 
@@ -131,11 +131,11 @@ public class IfOperator<T> implements Observable.Operator<T, T> {
                             case AND:
                                 return comparingCondition.call(t) && conjunctionCondition.call(t);
                             case NOT_AND:
-                                return !(comparingCondition.call(t) && conjunctionCondition.call(t));
+                                return comparingCondition.call(t) && !conjunctionCondition.call(t);
                             case OR:
                                 return comparingCondition.call(t) || conjunctionCondition.call(t);
                             case NOT_OR:
-                                return !(comparingCondition.call(t) || conjunctionCondition.call(t));
+                                return comparingCondition.call(t) || !conjunctionCondition.call(t);
                         }
                     }
 
