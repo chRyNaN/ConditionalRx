@@ -11,3 +11,7 @@ myObservable.lift(Conditional.ifThis(myObject -> myObject.isTrue())
                       .then(myObject::performFunction)
                       .otherwise(myObject::performOtherFunction));
 ```
+
+## Note:
+
+This is a new experimental project and is currently not tested.
