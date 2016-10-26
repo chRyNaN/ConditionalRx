@@ -120,34 +120,52 @@ public class IfOperator<T> implements Observable.Operator<T, T> {
             this.conjunctionCondition = conjunctionCondition;
         }
 
+        public ConjunctionConditionBuilder<T> andThis(Func1<T, Boolean> conjunctionCondition) {
+            return new ConjunctionConditionBuilder<>(previousConditions, getConditionFunction(), ConjunctionConditionBuilder.Conjunction.AND, conjunctionCondition);
+        }
+
+        public ConjunctionConditionBuilder<T> orThis(Func1<T, Boolean> conjunctionCondition) {
+            return new ConjunctionConditionBuilder<>(previousConditions, getConditionFunction(), ConjunctionConditionBuilder.Conjunction.OR, conjunctionCondition);
+        }
+
+        public ConjunctionConditionBuilder<T> andNotThis(Func1<T, Boolean> conjunctionCondition) {
+            return new ConjunctionConditionBuilder<>(previousConditions, getConditionFunction(), ConjunctionConditionBuilder.Conjunction.NOT_AND, conjunctionCondition);
+        }
+
+        public ConjunctionConditionBuilder<T> orNotThis(Func1<T, Boolean> conjunctionCondition) {
+            return new ConjunctionConditionBuilder<>(previousConditions, getConditionFunction(), ConjunctionConditionBuilder.Conjunction.NOT_OR, conjunctionCondition);
+        }
+
         public IfOperator<T> then(Action1<T> action) {
-            final Func1<T, Boolean> cc = new Func1<T, Boolean>() {
+            previousConditions.add(getCondition(action));
+
+            return new IfOperator<>(previousConditions);
+        }
+
+        private Condition<T> getCondition(Action1<T> action) {
+            return new Condition<>(getConditionFunction(), action);
+        }
+
+        private Func1<T, Boolean> getConditionFunction() {
+            return new Func1<T, Boolean>() {
 
                 @Override
                 public Boolean call(T t) {
 
-                    if (!previousConditions.isEmpty()) {
-                        switch (conjunction) {
-                            case AND:
-                                return comparingCondition.call(t) && conjunctionCondition.call(t);
-                            case NOT_AND:
-                                return comparingCondition.call(t) && !conjunctionCondition.call(t);
-                            case OR:
-                                return comparingCondition.call(t) || conjunctionCondition.call(t);
-                            case NOT_OR:
-                                return comparingCondition.call(t) || !conjunctionCondition.call(t);
-                        }
+                    switch (conjunction) {
+                        case AND:
+                            return comparingCondition.call(t) && conjunctionCondition.call(t);
+                        case NOT_AND:
+                            return comparingCondition.call(t) && !conjunctionCondition.call(t);
+                        case OR:
+                            return comparingCondition.call(t) || conjunctionCondition.call(t);
+                        case NOT_OR:
+                            return comparingCondition.call(t) || !conjunctionCondition.call(t);
                     }
 
                     return false;
                 }
             };
-
-            final Condition<T> c = new Condition<>(cc, action);
-
-            previousConditions.add(c);
-
-            return new IfOperator<>(previousConditions);
         }
     }
 }
