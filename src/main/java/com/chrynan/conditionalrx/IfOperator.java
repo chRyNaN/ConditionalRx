@@ -58,22 +58,6 @@ public class IfOperator<T> implements Observable.Operator<T, T> {
         return conditionBuilder.then(action);
     }
 
-    public ConjunctionConditionBuilder<T> andThis(Func1<T, Boolean> condition) {
-        return new ConjunctionConditionBuilder<>(conditions, ConjunctionConditionBuilder.Conjunction.AND, condition);
-    }
-
-    public ConjunctionConditionBuilder<T> orThis(Func1<T, Boolean> condition) {
-        return new ConjunctionConditionBuilder<>(conditions, ConjunctionConditionBuilder.Conjunction.OR, condition);
-    }
-
-    public ConjunctionConditionBuilder andNotThis(Func1<T, Boolean> condition) {
-        return new ConjunctionConditionBuilder<>(conditions, ConjunctionConditionBuilder.Conjunction.NOT_AND, condition);
-    }
-
-    public ConjunctionConditionBuilder orNotThis(Func1<T, Boolean> condition) {
-        return new ConjunctionConditionBuilder<>(conditions, ConjunctionConditionBuilder.Conjunction.NOT_OR, condition);
-    }
-
     public static class IfConditionBuilder<T> {
 
         private final List<Condition<T>> previousConditions;
@@ -87,6 +71,22 @@ public class IfOperator<T> implements Observable.Operator<T, T> {
         public IfConditionBuilder(List<Condition<T>> previousConditions, Func1<T, Boolean> condition) {
             this.previousConditions = previousConditions;
             this.condition = condition;
+        }
+
+        public ConjunctionConditionBuilder<T> andThis(Func1<T, Boolean> conjunctionCondition) {
+            return new ConjunctionConditionBuilder<>(previousConditions, condition, ConjunctionConditionBuilder.Conjunction.AND, conjunctionCondition);
+        }
+
+        public ConjunctionConditionBuilder<T> orThis(Func1<T, Boolean> conjunctionCondition) {
+            return new ConjunctionConditionBuilder<>(previousConditions, condition, ConjunctionConditionBuilder.Conjunction.OR, conjunctionCondition);
+        }
+
+        public ConjunctionConditionBuilder andNotThis(Func1<T, Boolean> conjunctionCondition) {
+            return new ConjunctionConditionBuilder<>(previousConditions, condition, ConjunctionConditionBuilder.Conjunction.NOT_AND, conjunctionCondition);
+        }
+
+        public ConjunctionConditionBuilder orNotThis(Func1<T, Boolean> conjunctionCondition) {
+            return new ConjunctionConditionBuilder<>(previousConditions, condition, ConjunctionConditionBuilder.Conjunction.NOT_OR, conjunctionCondition);
         }
 
         public IfOperator<T> then(Action1<T> action) {
@@ -108,32 +108,34 @@ public class IfOperator<T> implements Observable.Operator<T, T> {
         }
 
         private final List<Condition<T>> previousConditions;
+        private final Func1<T, Boolean> comparingCondition;
         private final Conjunction conjunction;
-        private final Func1<T, Boolean> condition;
+        private final Func1<T, Boolean> conjunctionCondition;
 
-        public ConjunctionConditionBuilder(List<Condition<T>> previousConditions, Conjunction conjunction, Func1<T, Boolean> condition) {
+        public ConjunctionConditionBuilder(List<Condition<T>> previousConditions, Func1<T, Boolean> condition,
+                                           Conjunction conjunction, Func1<T, Boolean> conjunctionCondition) {
             this.previousConditions = previousConditions;
+            this.comparingCondition = condition;
             this.conjunction = conjunction;
-            this.condition = condition;
+            this.conjunctionCondition = conjunctionCondition;
         }
 
         public IfOperator<T> then(Action1<T> action) {
-            final Func1<T, Boolean> conjunctionCondition = new Func1<T, Boolean>() {
+            final Func1<T, Boolean> cc = new Func1<T, Boolean>() {
+
                 @Override
                 public Boolean call(T t) {
 
                     if (!previousConditions.isEmpty()) {
-                        final Func1<T, Boolean> comparingCondition = previousConditions.get(previousConditions.size() - 1).getCondition();
-
                         switch (conjunction) {
                             case AND:
-                                return comparingCondition.call(t) && condition.call(t);
+                                return comparingCondition.call(t) && conjunctionCondition.call(t);
                             case NOT_AND:
-                                return !(comparingCondition.call(t) && condition.call(t));
+                                return !(comparingCondition.call(t) && conjunctionCondition.call(t));
                             case OR:
-                                return comparingCondition.call(t) || condition.call(t);
+                                return comparingCondition.call(t) || conjunctionCondition.call(t);
                             case NOT_OR:
-                                return !(comparingCondition.call(t) || condition.call(t));
+                                return !(comparingCondition.call(t) || conjunctionCondition.call(t));
                         }
                     }
 
@@ -141,7 +143,7 @@ public class IfOperator<T> implements Observable.Operator<T, T> {
                 }
             };
 
-            final Condition<T> c = new Condition<>(conjunctionCondition, action);
+            final Condition<T> c = new Condition<>(cc, action);
 
             previousConditions.add(c);
 
