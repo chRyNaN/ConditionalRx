@@ -10,8 +10,8 @@ import rx.functions.Func1;
  */
 public class Condition<T> {
 
-    private Func1<T, Boolean> condition;
-    private Action1<T> action;
+    private final Func1<T, Boolean> condition;
+    private final Action1<T> action;
 
     public Condition(Func1<T, Boolean> condition, Action1<T> action) {
         this.condition = condition;

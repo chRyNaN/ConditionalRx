@@ -8,7 +8,7 @@ import rx.functions.Func1;
  * Created by ckeenan on 10/25/16.
  * The base class for ConditonalRx. This class provides static methods for creating condition {@link rx.Observable.Operator}s.
  */
-public class Conditional<T> {
+public class Conditional {
 
     /**
      * Starts the creation process for an {@link IfOperator} by passing the provided {@link Func1} representing the if-condition
@@ -25,6 +25,10 @@ public class Conditional<T> {
      */
     public static <T> IfOperator.IfConditionBuilder<T> ifThis(Func1<T, Boolean> condition) {
         return new IfOperator.IfConditionBuilder<>(condition);
+    }
+
+    public static <T, R> SwitchOperator<T, R> switchOn(Func1<T, R> switchStatementCondition) {
+        return new SwitchOperator<>(switchStatementCondition);
     }
 
     private Conditional() {
