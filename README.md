@@ -23,12 +23,23 @@ myObservable.doOnNext(new Action1<MyObject>() {
 }
 ```
 
-It's usually desireable to use Lamda Expressions with RxJava to reduce the amount of code needed and to increase readability. However, when there are multiple conditions it's hard, if not impossible, to use Lambdas, so, the code begins to look convoluted. With ConditionalRx, this problem is addressed by providing stream like builder styled Operators that can be used with RxJava's `lift` method. The above code can be written as the following using ConditionalRx:
+It's usually desireable to use Lamda Expressions with RxJava to reduce the amount of code needed and to increase readability. However, when there are multiple conditions it's hard, if not impossible, to use Lambdas (at least single line Lambda expressions), so, the code begins to look convoluted. With ConditionalRx, this problem is addressed by providing stream like builder styled Operators that can be used with RxJava's `lift` method. The above code can be written as the following using ConditionalRx:
 
 ```java
 myObservable.lift(Conditional.ifThis(myObject -> myObject.isTrue())
                       .then(myObject::performFunction)
                       .otherwise(myObject::performOtherFunction));
+```
+
+ConditionalRx also provides the support for Switch Statements via the `SwitchOperator`. Here's an example of using the `SwitchOperator`:
+
+```java
+myObservable.lift(Conditional.switchOn(myObject -> myObject.getInteger())
+                      .caseWithBreak(5)
+                      .then(myObject::performFunction)
+                      .caseWithBreak(24)
+                      .makeDefault()
+                      .then(myObject::performOtherFunction));
 ```
 
 ## Note:
@@ -37,7 +48,6 @@ This is a new experimental project and is currently not thoroughly tested.
 
 ## TODO:
 
-* Add switch statement methods
 * Clean-up code
 * Add more tests
 * Add JavaDoc
