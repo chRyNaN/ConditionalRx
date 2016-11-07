@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Created by ckeenan on 10/26/16.
  */
-public class ConditionalTest {
+public class ConditionalIfTest {
 
     private Observable<Integer> observable;
     private TestSubscriber<Integer> testSubscriber;
@@ -54,6 +54,28 @@ public class ConditionalTest {
         assertCodeExecutedSuccessfully();
 
         assertTrue("singleConditionShouldWork()", 1);
+    }
+
+    @Test
+    public void objectShouldPropogate() {
+        resetVariables();
+
+        // Single condition to check if same object is available in both the condition and the action
+        observable.lift(Conditional.ifThis(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer.equals(25);
+            }
+        }).then(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                count = 25;
+            }
+        })).subscribe(testSubscriber);
+
+        assertCodeExecutedSuccessfully();
+
+        assertTrue("objectShouldPropogate()", 25);
     }
 
     @Test
@@ -402,7 +424,7 @@ public class ConditionalTest {
     }
 
     private void assertTrue(String methodName, int valueCountShouldBe) {
-        Assert.assertTrue("Count field value in " + methodName + " method in ConditionalTest class is not correct " +
+        Assert.assertTrue("Count field value in " + methodName + " method in ConditionalIfTest class is not correct " +
                         "after performing test. Count value should be = " + valueCountShouldBe + " but it is = " + count,
                 count == valueCountShouldBe);
     }
